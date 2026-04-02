@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ app_name }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css', v=asset_v) }}">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="top-bar">
+      <div class="brand">
+        <h1>{{ app_name }}</h1>
+        <p>Bikin Undangan Semudah Ini.</p>
+      </div>
+      <div class="toolbar">
+        <label for="templateSelect">Template</label>
+        <select id="templateSelect" aria-label="Pilih template"></select>
+        <label for="layoutModeSelect">Mode Kertas</label>
+        <select id="layoutModeSelect" aria-label="Pilih mode kertas">
+          <option value="single">1 Undangan / Kertas</option>
+          <option value="double-horizontal">2 Undangan Kiri-Kanan</option>
+        </select>
+        <label for="doubleSourceModeSelect">Sumber 2-up</label>
+        <select id="doubleSourceModeSelect" aria-label="Sumber isi 2-up">
+          <option value="same">Kanan sama dengan kiri</option>
+          <option value="different">Kanan template berbeda</option>
+        </select>
+        <label for="rightTemplateSelect">Template Kanan</label>
+        <select id="rightTemplateSelect" aria-label="Pilih template kanan"></select>
+        <label for="paperPresetSelect">Ukuran Kertas</label>
+        <select id="paperPresetSelect" aria-label="Pilih ukuran kertas">
+          <option value="auto">Auto (ikut kanvas)</option>
+          <option value="a4-portrait">A4 Portrait</option>
+          <option value="a4-landscape">A4 Landscape</option>
+          <option value="f4-portrait">F4 Portrait</option>
+          <option value="f4-landscape">F4 Landscape</option>
+          <option value="letter-portrait">Letter Portrait</option>
+          <option value="letter-landscape">Letter Landscape</option>
+        </select>
+        <label for="paperMarginMmInput">Margin (mm)</label>
+        <input id="paperMarginMmInput" type="number" min="0" max="50" step="1" value="8">
+        <label class="check-inline toolbar-check" for="showCutMarksToggle">
+          <input id="showCutMarksToggle" type="checkbox" checked>
+          Cut marks
+        </label>
+        <button id="newTemplateBtn" class="btn btn-soft" type="button">Template Baru</button>
+        <button id="addComponentBtn" class="btn btn-soft" type="button">Tambah Komponen</button>
+        <button id="undoBtn" class="btn btn-soft" type="button" title="Ctrl+Z">Undo</button>
+        <button id="redoBtn" class="btn btn-soft" type="button" title="Ctrl+Y">Redo</button>
+        <button id="resetTemplateBtn" class="btn btn-soft" type="button">Reset</button>
+        <button id="exportJsonBtn" class="btn btn-soft" type="button">Export JSON</button>
+        <label class="btn btn-soft file-btn" for="importJsonInput">Import JSON</label>
+        <input id="importJsonInput" type="file" accept=".json,application/json" hidden>
+        <button id="downloadPngBtn" class="btn btn-soft" type="button">Download PNG</button>
+        <button id="downloadPdfBtn" class="btn btn-soft" type="button">Download PDF</button>
+        <button id="downloadDocxBtn" class="btn btn-soft" type="button">Download DOCX</button>
+        <button id="printBtn" class="btn btn-main" type="button">Cetak</button>
+      </div>
+    </header>
+
+    <section id="workspace" class="workspace">
+      <svg id="linkLayer" aria-hidden="true"></svg>
+
+      <aside class="editor-panel">
+        <div class="panel-head">
+          <h2>Panel Edit Komponen</h2>
+          <p>Ubah tulisan, logo, tanda tangan, tanggal, warna, dan posisi dari panel kiri.</p>
+        </div>
+        <div id="builderPanel" class="builder-panel">
+          <details open>
+            <summary>Template Builder Visual</summary>
+            <div class="builder-grid">
+              <div class="field">
+                <label for="builderTemplateName">Nama Template</label>
+                <input id="builderTemplateName" type="text" value="Template Kustom">
+              </div>
+              <div class="field">
+                <label for="builderTemplateCategory">Kategori</label>
+                <input id="builderTemplateCategory" type="text" value="Kustom">
+              </div>
+              <div class="field">
+                <label for="builderTemplateWidth">Lebar (px)</label>
+                <input id="builderTemplateWidth" type="number" value="900" min="400" max="2200">
+              </div>
+              <div class="field">
+                <label for="builderTemplateHeight">Tinggi (px)</label>
+                <input id="builderTemplateHeight" type="number" value="1240" min="500" max="3000">
+              </div>
+            </div>
+            <div class="builder-row">
+              <label class="check-inline">
+                <input id="builderCloneCurrent" type="checkbox" checked>
+                Clone template aktif
+              </label>
+              <button id="builderCreateTemplateBtn" class="mini-btn" type="button">Buat Template</button>
+            </div>
+
+            <div class="builder-divider"></div>
+
+            <div class="builder-grid">
+              <div class="field">
+                <label for="builderComponentType">Tipe Komponen</label>
+                <select id="builderComponentType">
+                  <option value="text">Text</option>
+                  <option value="multiline">Multiline</option>
+                  <option value="image">Image</option>
+                  <option value="signature">Signature</option>
+                  <option value="line">Line (Garis)</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="builderComponentLabel">Nama Komponen</label>
+                <input id="builderComponentLabel" type="text" value="Komponen Baru">
+              </div>
+            </div>
+            <div class="builder-row">
+              <button id="builderAddComponentBtn" class="mini-btn" type="button">Tambah Komponen ke Template Aktif</button>
+            </div>
+          </details>
+        </div>
+        <div id="editorList" class="editor-list"></div>
+      </aside>
+
+      <main class="preview-panel">
+        <div id="previewStage" class="preview-stage">
+          <div id="layoutSheet" class="layout-sheet layout-single">
+            <div id="invitationCanvas" class="invitation-canvas"></div>
+            <div id="invitationCanvasMirror" class="invitation-canvas invitation-canvas-mirror" aria-hidden="true"></div>
+          </div>
+        </div>
+      </main>
+    </section>
+
+    <footer class="status-bar">
+      <span id="statusText">Memuat template...</span>
+      <span id="metaText"></span>
+    </footer>
+  </div>
+
+  <script defer src="{{ url_for('static', filename='app.js', v=asset_v) }}"></script>
+</body>
+</html>
